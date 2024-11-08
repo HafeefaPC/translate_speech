@@ -10,6 +10,7 @@ const useTranslate = (sourceText, selectedLanguage) => {
   const [targetText, setTargetText] = useState("");
 
   useEffect(() => {
+
     const handleTranslate = async (sourceText) => {
       try {
         const response = await openai.chat.completions.create({

@@ -1,7 +1,6 @@
 "use client";
 import "regenerator-runtime/runtime";
-import React, { useState, ChangeEvent, useEffect } from "react";
-import { BackgroundBeams } from "../components/ui/background-beams";
+import React, { useState, ChangeEvent } from "react";
 import axios from "axios";
 import {
   IconCopy,
@@ -20,44 +19,40 @@ import { rtfToText } from "@/utils/rtfToText";
 
 import SvgDecorations from "@/components/SvgDecorations";
 import CategoryLinks from "@/components/categoryLinks";
+import { BackgroundBeams } from "@/components/ui/background-beams";
 
 const Home: React.FC = () => {
   const [sourceText, setSourceText] = useState<string>("");
   const [targetText, setTargetText] = useState<string>("");
   const [copied, setCopied] = useState<boolean>(false);
   const [favorite, setFavorite] = useState<boolean>(false);
-  const [languages] = useState<string[]>([
-    "English",
-    "Spanish",
-    "French",
-    "German",
-    "Chinese",
-  ]);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("Spanish");
+  const languageOptions = [
+    { name: "English", code: "en" },
+    { name: "Spanish", code: "es" },
+    { name: "French", code: "fr" },
+    { name: "German", code: "de" },
+    { name: "Chinese", code: "zh" },
+  ];
 
-  useEffect(() => {
-    const fetchTranslation = async () => {
-      try {
-        const response = await axios({
-          method: "POST",
-          url: "/api/huggingface",
-          data: {
-            text: sourceText,
-            lang: selectedLanguage,
-          },
-          headers: { "Content-Type": "application/json" },
-        });
-        setTargetText(response.data.translation_text);
-      } catch (error) {
-        console.error("Error fetching translation:", error);
-        alert("Error fetching translation. Please check the console for more details.");
-      }
-    };
-  
-    if (sourceText) {
-      fetchTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState(languageOptions[1].code);
+
+  const fetchTranslation = async () => {
+    console.log("Fetching translation...");
+    try {
+      const response = await axios.post("/api/translate", {
+        inputs: sourceText,
+      }, {
+        headers: { "Content-Type": "application/json" },
+      });
+      
+      // Assuming the result is an array, access the first element's translation_text
+      setTargetText(response.data[0].translation_text);
+    } catch (error) {
+      console.error("Error fetching translation:", error);
+      alert("Error fetching translation. Please check the console for more details.");
     }
-  }, [sourceText, selectedLanguage]);
+  };
+  
   
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -121,7 +116,7 @@ const Home: React.FC = () => {
           <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-24">
             <div className="text-center">
               <h1 className="text-4xl sm:text-6xl font-bold text-neutral-200">
-                Lingua<span className="text-[#f87315]">Speak</span>
+                Lingua<span className="text-blue-400">Speak</span>
               </h1>
 
               <p className="mt-3 text-neutral-400">
@@ -161,7 +156,7 @@ const Home: React.FC = () => {
                     <TextArea
                       id="target-language"
                       value={targetText}
-                      onChange={() => {}}
+                      onChange={() => { }}
                       placeholder="Target Language"
                     />
                     <div className="flex flex-row justify-between w-full">
@@ -169,7 +164,7 @@ const Home: React.FC = () => {
                         <LanguageSelector
                           selectedLanguage={selectedLanguage}
                           setSelectedLanguage={setSelectedLanguage}
-                          languages={languages}
+                          languages={languageOptions.map((lang) => lang.name)}
                         />
                         <IconVolume
                           size={22}
@@ -186,12 +181,19 @@ const Home: React.FC = () => {
                         <IconStar
                           size={22}
                           onClick={handleFavorite}
-                          className={favorite ? "text-yellow-500" : ""}
+                          className={favorite ? "text-blue-400" : ""}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
+
+                <button
+                  onClick={fetchTranslation}
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                >
+                  Translate
+                </button>
 
                 <SvgDecorations />
               </div>
